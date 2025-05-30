@@ -4,7 +4,15 @@ services:
   app:
     build:
       context: ./app
+      dockerfile: ./Dockerfile
       target: dev
+      args:
+        http_proxy: ${http_proxy}
+        HTTP_PROXY: ${HTTP_PROXY}
+        https_proxy: ${https_proxy}
+        HTTPS_PROXY: ${HTTPS_PROXY}
+        no_proxy: ${no_proxy}
+        NO_PROXY: ${NO_PROXY}
     volumes:
       - ./app:/workspaces/app
     env_file:
@@ -13,6 +21,12 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=development
+      - http_proxy
+      - HTTP_PROXY
+      - https_proxy
+      - HTTPS_PROXY
+      - no_proxy
+      - NO_PROXY
     expose:
       - "3000"  # 内部で使用
     depends_on:
@@ -21,6 +35,7 @@ services:
   nginx:
     build:
       context: ./nginx
+      dockerfile: ./Dockerfile
       args:
         NGINX_ENV: dev
     container_name: nginx-proxy
