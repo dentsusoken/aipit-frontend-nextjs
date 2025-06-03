@@ -57,7 +57,7 @@ jobs:
           echo "ECR_REGISTRY=$ECR_REGISTRY"
           echo "NGINX_ECR_REPO=$NGINX_ECR_REPO"
 
-          docker build -f nginx/Dockerfile --target prod -t $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG ./nginx
+          docker build -f nginx/Dockerfile -t $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG ./nginx
           docker tag $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG
           docker push $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG
           docker tag $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG $ECR_REGISTRY/$NGINX_ECR_REPO:latest
