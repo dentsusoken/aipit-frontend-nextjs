@@ -52,12 +52,13 @@ jobs:
         id: build-nginx
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          NEXTJS_ALB_HOST: ${{ secrets.NEXTJS_ALB_HOST }}
         run: |
           set -x
           echo "ECR_REGISTRY=$ECR_REGISTRY"
           echo "NGINX_ECR_REPO=$NGINX_ECR_REPO"
 
-          docker build -f nginx/Dockerfile -t $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG ./nginx
+          docker build --build-arg NEXTJS_ALB_HOST=${NEXTJS_ALB_HOST} -f nginx/Dockerfile -t $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG ./nginx
           docker tag $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG
           docker push $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG
           docker tag $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG $ECR_REGISTRY/$NGINX_ECR_REPO:latest
