@@ -1,7 +1,14 @@
 # 🧱 Frontend Next.js DevContainer Starter with Nginx & MySQL
 
-このリポジトリは、Next.js アプリケーションを Docker DevContainer でローカル開発し、ECS (Fargate) へ本番デプロイできる構成を提供します。  
-Nginx をリバースプロキシとして使用し、MySQL + Prisma による DB 操作を行います。
+このリポジトリは、Next.js アプリケーションを Docker DevContainer でローカル開発し、ECS (Fargate) へ本番デプロイできる構成を提供します。
+Nginx をリバースプロキシとして使用し、MySQL + Prisma による DB 操作（※）を行います。
+
+（※）MySQL + Prisma による DB 操作について
+- 「MySQL + Prisma による DB 操作」については20250604時点の状態では機能しない。\
+（GitHub Actionsによる検証時にPrisma関連のライブラリをコメントアウトしたため）
+- そのため、DB操作を確認したい場合は、以下修正のうえ、READMEの手順を実施すること。
+  - app/src/app/page.tsx：1,3,7,14~22行目のコメントアウトを外す
+  - app/.env：7行目のコメントアウトを外す
 
 ---
 
