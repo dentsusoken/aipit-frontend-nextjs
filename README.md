@@ -16,7 +16,7 @@ Nginx をリバースプロキシとして使用し、MySQL + Prisma による D
 | Docker     | コンテナ化             |
 | DevContainer | ローカル開発環境     |
 | ECS (Fargate) | 本番デプロイ先       |
-
+| GitHub Actions | AWS環境への自動デプロイ       |
 ---
 
 ## ⚙️ アプリケーションの起動
@@ -34,7 +34,7 @@ Nginx をリバースプロキシとして使用し、MySQL + Prisma による D
 1. リポジトリをクローンします：
 
     ```bash
-    git clone https://github.com/fcf-koga/nextjs-app-devcontainer.git
+    git clone https://github.com/dentsusoken/aipit-frontend-nextjs.git
     cd nextjs-app-devcontainer
     ```
 
@@ -56,7 +56,7 @@ npm run dev
 
 ### 🌐 アクセス確認
 - アプリ: http://localhost:8080
-- Prisma Studio: http://localhost:5555（手動で起動 npx prisma studio）
+- Prisma Studio: http://localhost:5555 （手動で起動 npx prisma studio）
 
 - nginx がリバースプロキシとして app（Next.js）に転送します
 - localhost:3000 へ直接アクセスも可能（Next.js 単体）
@@ -111,16 +111,20 @@ docker build -f nginx/Dockerfile -t my-nginx-proxy ./nginx
 ## 📁 ディレクトリ構成
 ```bash
 .
+├── .github/workflows/    # GitHub Actionsによる自動デプロイ設定
+│   └── store-front_deploy.yaml
 ├── app/                  # Next.js + Prisma アプリ
 │   ├── Dockerfile
 │   ├── .env
-│   └── prisma/
+│   ├── prisma/
+│   ├── public/
+│   └── src/
 ├── nginx/                # Nginx 開発・本番設定
-│   ├── Dockerfile
 │   ├── nginx.dev.conf
-│   └── nginx.prod.conf
+│   ├── nginx.prod.conf
+│   └── Dockerfile
 ├── .devcontainer/        # VS Code DevContainer 設定
-│   ├── devcontainer.json
+│   └── devcontainer.json
 ├── docker-compose.yml
 └── README.md
 ```
