@@ -1,0 +1,140 @@
+name: Automatically deploy the develop branch to AWS
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ap-northeast-1
+  # Nginx用
+  NGINX_ECR_REPO: nginx-app                        # NginxのECRリポジトリ名
+  NGINX_CONTAINER_NAME: nginx                      # タスク定義内のNginxコンテナ名
+  NGINX_TASK_NAME: nginx                           # NginxのECSタスク定義名
+  NGINX_SERVICE: nginx-service-with-alb            # デプロイ対象のNginxサービス名
+
+  # Next.js用
+  FRONTEND_ECR_REPO: nextjs-app                    # Next.jsのECRリポジトリ名
+  FRONTEND_CONTAINER_NAME: frontend                # タスク定義内のNext.jsコンテナ名
+  FRONTEND_TASK_NAME: frontend                     # Next.jsのECSタスク定義名
+  FRONTEND_SERVICE: nextjs-service-with-alb        # デプロイ対象のNext.jsサービス名
+
+  ECS_CLUSTER: frontend-cluster                    # 共通のECSクラスタ名
+
+
+jobs:
+  deploy-dev:
+    # develop ブランチがPR 経由でマージされたとき
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'develop'
+    runs-on: ubuntu-latest
+    environment: DEV
+    steps:
+      - name: Checkout source  # ソースコードを取得
+        uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4  # GHAからAWSにアクセスするための認証設定
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+  
+      - name: Login to Amazon ECR  # DockerでECRにログイン
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+  
+      - name: Set image tag  # コミットIDを元にタグを生成
+        run: echo "IMAGE_TAG=$(git rev-parse --short=7 HEAD)" >> $GITHUB_ENV
+
+      # ======== Build & Push Nginx image ========
+      - name: Build & Push Nginx image
+        id: build-nginx
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          set -x
+          echo "ECR_REGISTRY=$ECR_REGISTRY"
+          echo "NGINX_ECR_REPO=$NGINX_ECR_REPO"
+
+          docker build -f nginx/Dockerfile -t $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG ./nginx
+          docker tag $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG
+          docker tag $ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG $ECR_REGISTRY/$NGINX_ECR_REPO:latest
+          docker push $ECR_REGISTRY/$NGINX_ECR_REPO:latest
+
+          echo "image=$ECR_REGISTRY/$NGINX_ECR_REPO:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Get current Nginx task definition  # 現在のNginxタスク定義を取得
+        run: |
+          aws ecs describe-task-definition --task-definition $NGINX_TASK_NAME --query taskDefinition --output json  | jq -r 'del(
+            .taskDefinitionArn,
+            .requiresAttributes,
+            .compatibilities,
+            .revision,
+            .status,
+            .registeredAt,
+            .registeredBy,
+            .enableFaultInjection
+          )' > nginx-task.json
+
+      - name: Render Nginx task definition # Nginxのタスク定義のimageだけを更新
+        id: render-nginx
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: nginx-task.json
+          container-name: ${{ env.NGINX_CONTAINER_NAME }}
+          image: ${{ steps.build-nginx.outputs.image }}
+
+      - name: Deploy Nginx to ECS # 新しいタスク定義をECSにデプロイ
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-nginx.outputs.task-definition }}
+          service: ${{ env.NGINX_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+
+      # ======== Build & Push Next.js image ========
+      - name: Build & Push Frontend image
+        id: build-frontend
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -f app/Dockerfile --target prod -t $ECR_REGISTRY/$FRONTEND_ECR_REPO:$IMAGE_TAG ./app
+          docker tag $ECR_REGISTRY/$FRONTEND_ECR_REPO:$IMAGE_TAG $ECR_REGISTRY/$FRONTEND_ECR_REPO:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$FRONTEND_ECR_REPO:$IMAGE_TAG
+          docker tag $ECR_REGISTRY/$FRONTEND_ECR_REPO:$IMAGE_TAG $ECR_REGISTRY/$FRONTEND_ECR_REPO:latest
+          docker push $ECR_REGISTRY/$FRONTEND_ECR_REPO:latest
+
+          echo "image=$ECR_REGISTRY/$FRONTEND_ECR_REPO:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Get current Frontend task definition
+        run: |
+          aws ecs describe-task-definition --task-definition $FRONTEND_TASK_NAME --query taskDefinition --output json | jq -r 'del(
+            .taskDefinitionArn,
+            .requiresAttributes,
+            .compatibilities,
+            .revision,
+            .status,
+            .registeredAt,
+            .registeredBy,
+            .enableFaultInjection
+          )' > frontend-task.json
+
+      - name: Render Frontend task definition
+        id: render-frontend
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: frontend-task.json
+          container-name: ${{ env.FRONTEND_CONTAINER_NAME }}
+          image: ${{ steps.build-frontend.outputs.image }}
+
+      - name: Deploy Frontend to ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-frontend.outputs.task-definition }}
+          service: ${{ env.FRONTEND_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+
+      - name: Summary
+        run: echo "✅ Nginx & Next.js both deployed successfully to ECS!" >> $GITHUB_STEP_SUMMARY
+ 
