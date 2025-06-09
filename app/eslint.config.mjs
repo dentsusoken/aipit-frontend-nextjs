@@ -12,19 +12,19 @@ const compat = new FlatCompat({
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   // TypeScriptルールの一時的な緩和
-  {
-    files: ["**/*.{ts,tsx,js,jsx}"],
-    rules: {
-      "@typescript-eslint/no-unused-vars": "off",
-      "@typescript-eslint/no-explicit-any": "off",
-      // "@typescript-eslint/no-unused-expressions": "off",
-      "@typescript-eslint/no-empty-object-type": "off",
-      "@typescript-eslint/no-this-alias": "off",
-      "@typescript-eslint/no-require-imports": "off",
-      "@typescript-eslint/no-unsafe-function-type": "off",
-      "@next/next/no-assign-module-variable": "off",
-    },
-  },
+  // {
+  //   files: ["**/*.{ts,tsx,js,jsx}"],
+  //   rules: {
+  //     "@typescript-eslint/no-unused-vars": "off",
+  //     "@typescript-eslint/no-explicit-any": "off",
+  //     // "@typescript-eslint/no-unused-expressions": "off",
+  //     // "@typescript-eslint/no-empty-object-type": "off",
+  //     // "@typescript-eslint/no-this-alias": "off",
+  //     // "@typescript-eslint/no-require-imports": "off",
+  //     // "@typescript-eslint/no-unsafe-function-type": "off",
+  //     // "@next/next/no-assign-module-variable": "off",
+  //   },
+  // },
 ];
 
 export default eslintConfig;
