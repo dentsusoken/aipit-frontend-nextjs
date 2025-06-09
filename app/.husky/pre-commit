@@ -1,5 +1,0 @@
-#!/bin/sh
-echo "[husky] pre-commit hook is runnning!"
-. "$(dirname "$0")/_/husky.sh"
-
-npx lint-staged
