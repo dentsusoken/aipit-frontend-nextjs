@@ -2,5 +2,5 @@
 echo "[husky]pre-commit hook is running!"
 . "$(dirname "$0")/_/husky.sh"
 
-cd app
+cd app || exit 1
 npx lint-staged
