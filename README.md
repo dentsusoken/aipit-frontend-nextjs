@@ -24,6 +24,10 @@ Nginx をリバースプロキシとして使用し、MySQL + Prisma による D
 | DevContainer | ローカル開発環境     |
 | ECS (Fargate) | 本番デプロイ先       |
 | GitHub Actions | AWS環境への自動デプロイ       |
+| husky | Gitフックを使ったコミット前チェック       |
+| lint-staged | ステージされたファイルのみにLint/Format適用       |
+| Prettier | コードフォーマッター（整形ツール）       |
+| ESlint | コードの静的解析（ルール違反の検出）       |
 ---
 
 ## ⚙️ アプリケーションの起動
@@ -115,11 +119,33 @@ docker build -f nginx/Dockerfile -t my-nginx-proxy ./nginx
 
 - ECR にプッシュ後、ECS Fargate での構築に対応
 
+## 🧹 コード品質チェック（ESlint/Prettier）
+このプロジェクトでは、コミット時に自動で Eslint と Prettier によるチェックが行われるよう、以下のツールを導入しています：
+- husky：Gitフックの管理
+- lint-staged：ステージされたファイルのみに対して、リントやフォーマットを実行
+
+### 🔄自動実行される処理
+`git Commit`を実行するタイミングで以下が動作します：
+1. ステージされたファイル（`git add`されたファイル）のみ対象
+2. Prettier によるコードフォーマット
+3. ESlint によるコードリント
+
+通常の開発フローでは、開発者が`app/src/app`配下の実装ファイルに対して個別に`npx eslint .`や`npx prettier . --check`を実行することが想定されます。
+本仕組みにより、**最終的なコミット直前のチェック**として自動実行されるため、意図しないスタイルの崩れやリントエラーを含むファイルのコミットを防止することできます。
+※なお、コマンド実行による自動修正は行わない方針としました
+
+### 🛠️導入済であることの確認方法
+- `.husky/`ディレクトリが存在し、`pre-commit`ファイルがあること
+- `package.json`に`lint-staged`の設定があること
+
 ## 📁 ディレクトリ構成
 ```bash
 .
 ├── .github/workflows/    # GitHub Actionsによる自動デプロイ設定
 │   └── store-front_deploy.yaml
+├── .husky                # Gitフック用スクリプト（pre-commit等）
+│   ├── _/husky.sh
+│   └── pre-commit
 ├── app/                  # Next.js + Prisma アプリ
 │   ├── Dockerfile
 │   ├── .env
