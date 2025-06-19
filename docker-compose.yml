@@ -28,9 +28,16 @@ services:
       - no_proxy
       - NO_PROXY
     expose:
-      - "3000"  # 内部で使用
+      - "3000" # 内部で使用
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        npx prisma migrate dev --name init &&
+        npm run dev
+      "
 
   nginx:
     build:
@@ -38,25 +45,42 @@ services:
       dockerfile: ./Dockerfile
       args:
         NGINX_ENV: dev
+        http_proxy: ${http_proxy}
+        HTTP_PROXY: ${HTTP_PROXY}
+        https_proxy: ${https_proxy}
+        HTTPS_PROXY: ${HTTPS_PROXY}
+        no_proxy: ${no_proxy}
+        NO_PROXY: ${NO_PROXY}
     container_name: nginx-proxy
+    environment:
+      - http_proxy
+      - HTTP_PROXY
+      - https_proxy
+      - HTTPS_PROXY
+      - no_proxy
+      - NO_PROXY
     ports:
-      - "8080:80"  # ホスト → Nginx
+      - "8080:80" # ホスト → Nginx
     depends_on:
       - app
 
   db:
-    image: mysql:8.0
-    container_name: mysql-db
+    image: postgres:16.0
+    container_name: postgres-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-      MYSQL_DATABASE: sampledb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: sampledb
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d sampledb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   db_data:

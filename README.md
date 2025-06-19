@@ -1,10 +1,10 @@
-# 🧱 Frontend Next.js DevContainer Starter with Nginx & MySQL
+# 🧱 Frontend Next.js DevContainer Starter with Nginx & PostgreSQL
 
 このリポジトリは、Next.js アプリケーションを Docker DevContainer でローカル開発し、ECS (Fargate) へ本番デプロイできる構成を提供します。
-Nginx をリバースプロキシとして使用し、MySQL + Prisma による DB 操作（※）を行います。
+Nginx をリバースプロキシとして使用し、PostgreSQL + Prisma による DB 操作（※）を行います。
 
-（※）MySQL + Prisma による DB 操作について
-- 「MySQL + Prisma による DB 操作」については20250604時点の状態では機能しない。\
+（※）PostgreSQL + Prisma による DB 操作について
+- 「PostgreSQL + Prisma による DB 操作」については20250604時点の状態では機能しない。\
 （GitHub Actionsによる検証時にPrisma関連のライブラリをコメントアウトしたため）
 - そのため、DB操作を確認したい場合は、以下修正のうえ、READMEの手順を実施すること。
   - app/src/app/page.tsx：1,3,7,14~22行目のコメントアウトを外す
@@ -18,7 +18,7 @@ Nginx をリバースプロキシとして使用し、MySQL + Prisma による D
 |------------|------------------------|
 | Next.js    | フロントエンド/SSR     |
 | Prisma     | ORM / DBマイグレーション |
-| MySQL      | データベース           |
+| PostgreSQL      | データベース           |
 | Nginx      | リバースプロキシ       |
 | Docker     | コンテナ化             |
 | DevContainer | ローカル開発環境     |
@@ -92,17 +92,17 @@ npx prisma studio
 .env ファイル（app/.env）で管理：
 
 ```env
-DATABASE_URL="mysql://root:root@db:3306/sampledb"
+DATABASE_URL="postgresql://root:root@db:5432/sampledb"
 ```
 | 項目      | 値                 |
 | ------- | ----------------- |
 | ユーザー名   | `root`            |
 | パスワード   | `password`        |
 | ホスト     | `db`（dockerサービス名） |
-| ポート     | `3306`            |
+| ポート     | `5432`            |
 | データベース名 | `sampledb`        |
 
-Docker Compose 内の MySQL 設定と同期しています。
+Docker Compose 内の PostgreSQL 設定と同期しています。
 
 ## 🚢 本番構成（ECS/Fargate）
 - app/Dockerfile はマルチステージ構成（開発/本番）
