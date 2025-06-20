@@ -30,8 +30,8 @@ services:
     expose:
       - "3000" # 内部で使用
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+      - keycloak
     command: >
       sh -c "
         echo 'Waiting for database...' &&
@@ -82,5 +82,21 @@ services:
       timeout: 5s
       retries: 5
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    tty: true
+    stdin_open: true
+    ports:
+      - "18080:8080"
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
+    command:
+      - start-dev
+
 volumes:
   db_data:
+  keycloak_data:
