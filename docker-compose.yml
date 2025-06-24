@@ -14,7 +14,7 @@ services:
         no_proxy: ${no_proxy}
         NO_PROXY: ${NO_PROXY}
     volumes:
-      - ./app:/workspaces/app
+      - ./app:/app
     env_file:
       - ./app/.env
     container_name: nextjs-app
@@ -28,9 +28,10 @@ services:
       - no_proxy
       - NO_PROXY
     expose:
-      - "3000"  # 内部で使用
+      - "3000" # 内部で使用
     depends_on:
       - db
+      - keycloak
 
   nginx:
     build:
@@ -38,25 +39,61 @@ services:
       dockerfile: ./Dockerfile
       args:
         NGINX_ENV: dev
+        http_proxy: ${http_proxy}
+        HTTP_PROXY: ${HTTP_PROXY}
+        https_proxy: ${https_proxy}
+        HTTPS_PROXY: ${HTTPS_PROXY}
+        no_proxy: ${no_proxy}
+        NO_PROXY: ${NO_PROXY}
     container_name: nginx-proxy
+    environment:
+      - http_proxy
+      - HTTP_PROXY
+      - https_proxy
+      - HTTPS_PROXY
+      - no_proxy
+      - NO_PROXY
     ports:
-      - "8080:80"  # ホスト → Nginx
+      - "8080:80" # ホスト → Nginx
     depends_on:
       - app
 
   db:
-    image: mysql:8.0
-    container_name: mysql-db
+    image: postgres:16.0
+    container_name: postgres-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-      MYSQL_DATABASE: sampledb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: sampledb
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d sampledb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    ports:
+      - "18080:18080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 18080
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_HTTP_PORT: 18080
+    command:
+      - start-dev
+    volumes:
+      - keycloak_data:/opt/keycloak/data
 
 volumes:
   db_data:
+  keycloak_data:

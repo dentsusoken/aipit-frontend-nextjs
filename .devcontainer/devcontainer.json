@@ -1,20 +1,20 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/javascript-node-postgres
 {
-	"name": "Node.js & MySQL",
+	"name": "Node.js & PostgreSQL",
 	"dockerComposeFile": "../docker-compose.yml",
 	"service": "app",
-	"workspaceFolder": "/workspaces/app",
+	"workspaceFolder": "/app",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// This can be used to network with other containers or with the host.
-	"forwardPorts": [3000, "nginx:8080","db:3306"],
+	"forwardPorts": [3000, "nginx:8080","db:5432", "keycloak:18080"],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "npm install",
+	// "postCreateCommand": "npm install",
 	"postStartCommand": "npx prisma migrate dev --name init",
 
 	// Configure tool-specific properties.
