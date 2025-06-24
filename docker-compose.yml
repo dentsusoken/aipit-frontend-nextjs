@@ -14,7 +14,7 @@ services:
         no_proxy: ${no_proxy}
         NO_PROXY: ${NO_PROXY}
     volumes:
-      - ./app:/workspaces/app
+      - ./app:/app
     env_file:
       - ./app/.env
     container_name: nextjs-app
@@ -32,12 +32,6 @@ services:
     depends_on:
       - db
       - keycloak
-    command: >
-      sh -c "
-        echo 'Waiting for database...' &&
-        npx prisma migrate dev --name init &&
-        npm run dev
-      "
 
   nginx:
     build:

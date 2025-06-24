@@ -25,7 +25,7 @@ export const middleware = async (req: NextRequest) => {
 
     // IdPからのcallback処理を実施し、ルートディレクトリにリダイレクトする。
     if (isCallback(pathname)) {
-      const response = await fetch("http://localhost:3001/api/auth/token", {
+      const response = await fetch(`${process.env.BFF_BASE_URL}/api/auth/token`, {
         method: "POST",
         body: searchParams.toString(),
       });
@@ -35,13 +35,13 @@ export const middleware = async (req: NextRequest) => {
       if (json.success) {
         console.log("json :>> ", json);
         cookieStore.set("access_token", json.data.access_token);
-        return NextResponse.redirect("http://localhost:3001");
+        return NextResponse.redirect(`${process.env.FRONTEND_BASE_URL}`);
       }
       throw new Error(json.error);
     }
 
     // 上記以外の場合は、IdPにリダイレクトする。
-    const response = await fetch("http://localhost:3001/api/auth/signin");
+    const response = await fetch(`${process.env.BFF_BASE_URL}/api/auth/signin`);
     // TODO zodなどを使用してparse/validateできるようにする。
     const json = (await response.json()) as APIResponse<{
       authorizationUrl: string;

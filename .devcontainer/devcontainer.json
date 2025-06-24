@@ -4,7 +4,7 @@
 	"name": "Node.js & PostgreSQL",
 	"dockerComposeFile": "../docker-compose.yml",
 	"service": "app",
-	"workspaceFolder": "/workspaces/app",
+	"workspaceFolder": "/app",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
@@ -15,7 +15,7 @@
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "npm install",
-	// "postStartCommand": "npx prisma migrate dev --name init",
+	"postStartCommand": "npx prisma migrate dev --name init",
 
 	// Configure tool-specific properties.
 	"customizations": {"vscode": {"extensions": ["prisma.prisma","esbenp.prettier-vscode"]}}
