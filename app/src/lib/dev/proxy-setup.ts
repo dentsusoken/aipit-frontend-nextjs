@@ -7,7 +7,6 @@
 import { setGlobalDispatcher, EnvHttpProxyAgent } from "undici";
 
 if (typeof window === "undefined") {
-  console.log("process.env.NO_PROXY :>> ", process.env.NO_PROXY);
   setGlobalDispatcher(
     new EnvHttpProxyAgent({
       httpProxy: process.env.HTTP_PROXY,

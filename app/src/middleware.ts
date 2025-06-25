@@ -33,7 +33,6 @@ export const middleware = async (req: NextRequest) => {
         access_token: string;
       }>;
       if (json.success) {
-        console.log("json :>> ", json);
         cookieStore.set("access_token", json.data.access_token);
         return NextResponse.redirect(`${process.env.FRONTEND_BASE_URL}`);
       }
