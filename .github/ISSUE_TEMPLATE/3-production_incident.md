@@ -2,7 +2,7 @@
 name: 🛠️ 本番障害修正
 about: 本番環境で発生した障害に起因する不具合の修正Issue
 title: "[Fix] 機能名 + 修正概要"
-labels: [bug, production-fix]
+labels: [hotfix]
 ---
 
 ## 🧩 影響を受けた機能
