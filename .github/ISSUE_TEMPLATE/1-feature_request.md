@@ -2,7 +2,7 @@
 name: ✨ 機能開発
 about: 新しい機能の開発に関するIssue
 title: "[Feature] 機能名を記入してください"
-labels: feature
+labels: [feature]
 ---
 
 ## 📝 機能の概要
