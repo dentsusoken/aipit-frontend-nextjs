@@ -5,12 +5,12 @@ FROM node:20-alpine AS dev
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+# COPY package*.json ./
+# RUN npm install
 
-COPY . .
+# COPY . .
 
-CMD ["npm", "run", "dev"]
+# CMD ["npm", "run", "dev"]
 
 # ===========================
 # Stage: production

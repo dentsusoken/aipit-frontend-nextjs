@@ -30,8 +30,13 @@ services:
     expose:
       - "3000" # 内部で使用
     depends_on:
-      - db
+      # - db
       - keycloak
+    tty: true
+    command: >
+      sh -c "
+        npm install && npm run dev
+      "
 
   nginx:
     build:
@@ -58,23 +63,23 @@ services:
     depends_on:
       - app
 
-  db:
-    image: postgres:16.0
-    container_name: postgres-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: sampledb
-    ports:
-      - "5432:5432"
-    volumes:
-      - db_data:/var/lib/postgres
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d sampledb"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # db:
+  #   image: postgres:16.0
+  #   container_name: postgres-db
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_USER: user
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_DB: sampledb
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - db_data:/var/lib/postgres
+  #   healthcheck:
+  #     test: [ "CMD-SHELL", "pg_isready -U user -d sampledb" ]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
@@ -95,5 +100,5 @@ services:
       - keycloak_data:/opt/keycloak/data
 
 volumes:
-  db_data:
+  # db_data:
   keycloak_data:

@@ -14,8 +14,8 @@
 	"forwardPorts": [3000, "nginx:8080","db:5432", "keycloak:18080"],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "npm install",
-	"postStartCommand": "npx prisma migrate dev --name init",
+	// "postCreateCommand": "npm install && npm run dev",
+	// "postStartCommand": "npx prisma migrate dev --name init",
 
 	// Configure tool-specific properties.
 	"customizations": {"vscode": {"extensions": ["prisma.prisma","esbenp.prettier-vscode"]}}
